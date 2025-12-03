@@ -1,0 +1,96 @@
+state,state_abbr,city_region,market_code
+Alabama,AL,Birmingham,BHM
+Alabama,AL,Gulf Coast,GCL
+Alabama,AL,Huntsville,HSV
+Alabama,AL,Tuscaloosa,TUS
+Arizona,AZ,Phoenix,PHX
+Arizona,AZ,Tucson,TUC
+Arkansas,AR,Fort Smith,FSM
+Arkansas,AR,Jonesboro,JBR
+Arkansas,AR,Little Rock,LIT
+Arkansas,AR,Northwest Arkansas,NWA
+California,CA,Fresno / Bakersfield,FRB
+California,CA,Inland Empire,INE
+California,CA,Los Angeles / Ventura County,LAV
+California,CA,Orange County,ORC
+California,CA,Palm Springs / Coachella,PSC
+California,CA,Sacramento,SAC
+California,CA,San Diego,SDG
+California,CA,San Francisco / Bay Area,SFB
+California,CA,San Francisco Metro Area,SFM
+Colorado,CO,Colorado Springs,COS
+Colorado,CO,Denver,DEN
+Colorado,CO,Grand Junction,GJT
+Delaware,DE,New Castle / Kent County,NCK
+Delaware,DE,Sussex County,SUX
+Florida,FL,Ft. Lauderdale,FTL
+Florida,FL,Gulf Coast,GCF
+Florida,FL,Jacksonville / St. Augustine,JAX
+Florida,FL,Miami,MIA
+Florida,FL,Naples / Ft. Myers,NFM
+Florida,FL,Ocala,OCA
+Florida,FL,Orlando,ORL
+Florida,FL,Palm Beach,PMB
+Florida,FL,Sarasota / Manatee,SRM
+Florida,FL,Space Coast / Melbourne,SCM
+Florida,FL,Tampa / Manatee,TMP
+Florida,FL,Treasure Coast,TRC
+Georgia,GA,Atlanta,ATL
+Georgia,GA,Middle Georgia,MDG
+Georgia,GA,Savannah,SAV
+Idaho,ID,Boise,BOI
+Idaho,ID,Inland Northwest,INW
+Illinois,IL,Chicago,CHI
+Indiana,IN,Indianapolis,IND
+Indiana,IN,Northwest Indiana,NWI
+Kansas,KS,Kansas City,KCK
+Maryland,MD,Central Maryland,CMD
+Maryland,MD,Eastern Shore,ESH
+Maryland,MD,MD / D.C. Metro,MDC
+Maryland,MD,Southern Maryland,SMD
+Minnesota,MN,Minneapolis / St. Paul,MSP
+Minnesota,MN,Rochester,ROC
+Missouri,MO,Kansas City,KCM
+Nevada,NV,Las Vegas,LVS
+Nevada,NV,Reno,RNO
+New Jersey,NJ,New Jersey,NJY
+New York,NY,New York,NYC
+North Carolina,NC,Charlotte,CLT
+North Carolina,NC,Raleigh,RAL
+North Carolina,NC,Wilmington,WLM
+North Carolina,NC,Winston-Salem,WSL
+Oklahoma,OK,Oklahoma City,OKC
+Oklahoma,OK,Stillwater,STW
+Oklahoma,OK,Tulsa,TUL
+Oregon,OR,Central Oregon,COR
+Oregon,OR,Portland,PDX
+Oregon,OR,Willamette Valley,WLV
+Pennsylvania,PA,Adams County,ADM
+Pennsylvania,PA,Greater Philadelphia Area,PHL
+South Carolina,SC,Charleston,CHS
+South Carolina,SC,Charlotte,CHR
+South Carolina,SC,Columbia,COL
+South Carolina,SC,Greenville,GRV
+South Carolina,SC,Hilton Head / Bluffton,HHB
+South Carolina,SC,Myrtle Beach,MYR
+Tennessee,TN,Chattanooga,CHA
+Tennessee,TN,Nashville,NAS
+Texas,TX,Austin / Central Texas,AUS
+Texas,TX,Corpus Christi,CRP
+Texas,TX,Dallas / Ft. Worth,DFW
+Texas,TX,Houston,HOU
+Texas,TX,Lubbock,LBB
+Texas,TX,San Antonio,SAT
+Texas,TX,Temple,TEM
+Texas,TX,Texas Hill Country,THC
+Utah,UT,Salt Lake City,SLC
+Utah,UT,St. George,STG
+Virginia,VA,Richmond Area,RIC
+Virginia,VA,VA / D.C. Metro,VDC
+Virginia,VA,Williamsburg,WBG
+Washington,WA,Inland Northwest,INW
+Washington,WA,Seattle,SEA
+Washington,WA,Vancouver,VAN
+West Virginia,WV,Berkeley County,BKC
+West Virginia,WV,Jefferson County,JFC
+Wisconsin,WI,Madison,MAD

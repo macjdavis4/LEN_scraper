@@ -37,8 +37,9 @@ env/
 .DS_Store
 Thumbs.db
 
-# Scraped data output
+# Scraped data output (but keep market_codes.csv)
 *.csv
+!market_codes.csv
 *.json
 !package.json
 
