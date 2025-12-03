@@ -4,7 +4,8 @@ A Python-based web scraper for collecting Lennar Homebuilders listings from lenn
 
 ## Features
 
-- **Market-based scraping**: Uses Lennar's internal search API with market codes for comprehensive coverage
+- **Market-based scraping**: Uses Lennar's search API with state/market parameters
+- **CSV-driven market codes**: Easy to update market codes via `market_codes.csv`
 - **Full pagination handling**: Automatically clicks "Load more homes" to get all listings
 - **Status extraction**: Captures home status (Move-In Ready, Under Construction, Coming Soon)
 - **Comprehensive data**:
@@ -15,7 +16,7 @@ A Python-based web scraper for collecting Lennar Homebuilders listings from lenn
   - Status
   - Market/Region info
 - **Multiple export formats**: CSV, JSON, and Excel
-- **All US markets supported**: FL, TX, AZ, CA, CO, GA, ID, IN, MD, MN, NV, NJ, NC, OR, SC, TN, UT, VA, WA
+- **All US markets supported**: 95 markets across 28 states
 
 ## Installation
 
@@ -36,46 +37,46 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Scrape All Florida Markets
+### Basic Commands
 
 ```bash
+# Scrape all Florida markets
 python lennar_scraper.py --states FL
-```
 
-### Scrape Multiple States
-
-```bash
+# Scrape multiple states
 python lennar_scraper.py --states FL TX AZ CA
-```
 
-### Scrape a Specific Market
+# Scrape a specific market
+python lennar_scraper.py --state FL --market TMP
 
-```bash
-python lennar_scraper.py --state FL --market TAM
-```
-
-### Scrape All States
-
-```bash
+# Scrape all states
 python lennar_scraper.py --all
 ```
 
-### Show Browser Window (Debug Mode)
+### List Available Markets
 
 ```bash
+# List all states with market counts
+python lennar_scraper.py --list-states
+
+# List markets for a specific state
+python lennar_scraper.py --list-markets FL
+```
+
+### Additional Options
+
+```bash
+# Show browser window (debug mode)
 python lennar_scraper.py --states FL --no-headless
-```
 
-### Export to Excel
-
-```bash
+# Export to Excel
 python lennar_scraper.py --states FL --output-excel lennar_fl.xlsx
-```
 
-### Use Custom ChromeDriver Path
-
-```bash
+# Use custom ChromeDriver path
 python lennar_scraper.py --states FL --chrome-path "C:\path\to\chromedriver.exe"
+
+# Verbose logging
+python lennar_scraper.py --states FL -v
 ```
 
 ## Command Line Options
@@ -86,6 +87,9 @@ python lennar_scraper.py --states FL --chrome-path "C:\path\to\chromedriver.exe"
 | `--state STATE` | Single state (use with --market) |
 | `--market CODE` | Specific market code (use with --state) |
 | `--all` | Scrape all states |
+| `--list-states` | List available states and market counts |
+| `--list-markets STATE` | List markets for a state |
+| `--market-codes-csv PATH` | Path to custom market codes CSV |
 | `--chrome-path PATH` | Path to chromedriver executable |
 | `--no-headless` | Show browser window |
 | `--output-csv FILE` | Output CSV file (default: lennar_listings.csv) |
@@ -95,50 +99,55 @@ python lennar_scraper.py --states FL --chrome-path "C:\path\to\chromedriver.exe"
 | `--delay SECONDS` | Page load delay (default: 3.0) |
 | `-v, --verbose` | Enable verbose/debug logging |
 
-## Market Codes
+## Market Codes CSV
 
-### Florida (FL)
-| Code | Market |
-|------|--------|
-| TAM | Tampa and Manatee |
-| TRE | Treasure Coast |
-| ORL | Orlando |
-| OCA | Ocala |
-| JAX | Jacksonville |
-| PEN | Gulf Coast |
-| SPA | Space Coast |
-| SAR | Sarasota |
-| FTM | Fort Myers |
-| PLM | Palm Beach |
-| FTL | Fort Lauderdale |
-| MIA | Miami |
+Market codes are loaded from `market_codes.csv`. Format:
 
-### Texas (TX)
-| Code | Market |
-|------|--------|
-| DAL | Dallas/Fort Worth |
-| HOU | Houston |
-| AUS | Austin |
-| SAN | San Antonio |
+```csv
+state,state_abbr,city_region,market_code
+Florida,FL,Tampa / Manatee,TMP
+Florida,FL,Orlando,ORL
+...
+```
 
-### Arizona (AZ)
-| Code | Market |
-|------|--------|
-| PHO | Phoenix |
-| TUC | Tucson |
+### Updating Market Codes
 
-### California (CA)
-| Code | Market |
-|------|--------|
-| BAY | Bay Area |
-| SAC | Sacramento |
-| LAX | Los Angeles |
-| SBD | Inland Empire |
-| SDG | San Diego |
-| ORA | Orange County |
+To add or modify markets, simply edit `market_codes.csv`. The scraper will automatically pick up changes on next run.
 
-### Other States
-See `MARKET_CODES` dictionary in `lennar_scraper.py` for complete list.
+## Supported States (28 total)
+
+| State | Abbr | Markets |
+|-------|------|---------|
+| Alabama | AL | 4 |
+| Arizona | AZ | 2 |
+| Arkansas | AR | 4 |
+| California | CA | 9 |
+| Colorado | CO | 3 |
+| Delaware | DE | 2 |
+| Florida | FL | 12 |
+| Georgia | GA | 3 |
+| Idaho | ID | 2 |
+| Illinois | IL | 1 |
+| Indiana | IN | 2 |
+| Kansas | KS | 1 |
+| Maryland | MD | 4 |
+| Minnesota | MN | 2 |
+| Missouri | MO | 1 |
+| Nevada | NV | 2 |
+| New Jersey | NJ | 1 |
+| New York | NY | 1 |
+| North Carolina | NC | 4 |
+| Oklahoma | OK | 3 |
+| Oregon | OR | 3 |
+| Pennsylvania | PA | 2 |
+| South Carolina | SC | 6 |
+| Tennessee | TN | 2 |
+| Texas | TX | 8 |
+| Utah | UT | 2 |
+| Virginia | VA | 3 |
+| Washington | WA | 3 |
+| West Virginia | WV | 2 |
+| Wisconsin | WI | 1 |
 
 ## Output Format
 
@@ -157,7 +166,7 @@ See `MARKET_CODES` dictionary in `lennar_scraper.py` for complete list.
 | community | Community/subdivision name |
 | status | Move-In Ready, Under Construction, etc. |
 | market | Market name |
-| market_code | Market code (TAM, ORL, etc.) |
+| market_code | Market code (TMP, ORL, etc.) |
 | url | Link to listing page |
 | scraped_at | Timestamp of scrape |
 
@@ -179,8 +188,8 @@ See `MARKET_CODES` dictionary in `lennar_scraper.py` for complete list.
       "sqft": 2500,
       "community": "Sunset Valley",
       "status": "Move-In Ready",
-      "market": "Tampa and Manatee",
-      "market_code": "TAM",
+      "market": "Tampa / Manatee",
+      "market_code": "TMP",
       "url": "https://www.lennar.com/...",
       "scraped_at": "2024-01-15T10:30:00"
     }
@@ -192,13 +201,7 @@ See `MARKET_CODES` dictionary in `lennar_scraper.py` for complete list.
 
 ### Missing Homes in Some Markets
 
-The scraper includes improvements over basic approaches:
-- Extended wait times for AJAX content
-- Multiple attempts for "Load more" button
-- Additional scrolling to trigger lazy loading
-- JavaScript click fallback when normal click fails
-
-If you're still missing homes, try:
+If you're missing homes, try increasing delays:
 ```bash
 python lennar_scraper.py --states FL --delay 5.0 --timeout 20 --no-headless
 ```
@@ -209,11 +212,12 @@ If ChromeDriver auto-download fails:
 1. Download ChromeDriver manually from https://chromedriver.chromium.org/
 2. Use `--chrome-path` to specify the location
 
-### Blocked/Timeout Errors
+### Market Code Not Found
 
-- Increase delays: `--delay 5.0`
-- Run in non-headless mode to debug: `--no-headless`
-- Check your internet connection
+If a market code isn't working:
+1. Check `market_codes.csv` for the correct code
+2. Use `--list-markets STATE` to see available markets
+3. Update the CSV if Lennar has changed their codes
 
 ## Project Structure
 
@@ -221,17 +225,20 @@ If ChromeDriver auto-download fails:
 LEN_scraper/
 ├── README.md              # This file
 ├── requirements.txt       # Python dependencies
+├── market_codes.csv       # Market codes database (editable)
 ├── lennar_scraper.py     # Main scraper
 └── .gitignore            # Git ignore file
 ```
 
 ## How It Works
 
-1. **URL Construction**: Uses `https://www.lennar.com/find-a-home?state=XX&market=YYY`
-2. **Cookie Handling**: Automatically accepts cookie consent popup
-3. **Pagination**: Clicks "Load more homes" button repeatedly until all homes are loaded
-4. **Parsing**: Finds price blocks and navigates to parent cards to extract all data
-5. **Status Detection**: Looks for status/pill elements or keywords in card text
+1. **Load Markets**: Reads market codes from `market_codes.csv`
+2. **URL Construction**: Uses `https://www.lennar.com/find-a-home?state=XX&market=YYY`
+3. **Cookie Handling**: Automatically accepts cookie consent popup
+4. **Pagination**: Clicks "Load more homes" button repeatedly until all homes are loaded
+5. **Parsing**: Finds price blocks and navigates to parent cards to extract all data
+6. **Status Detection**: Looks for status/pill elements or keywords in card text
+7. **Export**: Saves to CSV, JSON, and optionally Excel
 
 ## Legal Considerations
 

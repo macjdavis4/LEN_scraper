@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Lennar Homebuilders Listings Scraper (Improved)
+Lennar Homebuilders Listings Scraper
 
-Based on working approach - uses Lennar's find-a-home search with market codes.
+Uses Lennar's find-a-home search with market codes loaded from CSV.
 Uses Selenium to handle JavaScript rendering and "Load more" pagination.
 
 Extracts:
@@ -18,10 +18,12 @@ import argparse
 import csv
 import json
 import logging
+import os
 import re
 import time
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from bs4 import BeautifulSoup
@@ -61,115 +63,90 @@ class LennarListing:
     scraped_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
-# Market codes for all Lennar operating regions
-# Format: {state_abbrev: {market_code: market_name}}
-MARKET_CODES = {
-    "FL": {
-        "TAM": "Tampa and Manatee",
-        "TRE": "Treasure Coast",
-        "ORL": "Orlando",
-        "OCA": "Ocala",
-        "JAX": "Jacksonville",
-        "PEN": "Gulf Coast",
-        "SPA": "Space Coast",
-        "SAR": "Sarasota",
-        "FTM": "Fort Myers",
-        "PLM": "Palm Beach",
-        "FTL": "Fort Lauderdale",
-        "MIA": "Miami"
-    },
-    "TX": {
-        "DAL": "Dallas/Fort Worth",
-        "HOU": "Houston",
-        "AUS": "Austin",
-        "SAN": "San Antonio"
-    },
-    "AZ": {
-        "PHO": "Phoenix",
-        "TUC": "Tucson"
-    },
-    "CA": {
-        "BAY": "Bay Area",
-        "SAC": "Sacramento",
-        "LAX": "Los Angeles",
-        "SBD": "Inland Empire",
-        "SDG": "San Diego",
-        "ORA": "Orange County"
-    },
-    "CO": {
-        "DEN": "Denver"
-    },
-    "GA": {
-        "ATL": "Atlanta"
-    },
-    "ID": {
-        "BOI": "Boise"
-    },
-    "IN": {
-        "IND": "Indianapolis"
-    },
-    "MD": {
-        "BAL": "Baltimore",
-        "WAS": "Washington D.C."
-    },
-    "MN": {
-        "MSP": "Minneapolis"
-    },
-    "NV": {
-        "LAS": "Las Vegas",
-        "REN": "Reno"
-    },
-    "NJ": {
-        "NNJ": "Northern New Jersey",
-        "CNJ": "Central New Jersey"
-    },
-    "NC": {
-        "CHA": "Charlotte",
-        "RAL": "Raleigh"
-    },
-    "OR": {
-        "POR": "Portland"
-    },
-    "SC": {
-        "CHS": "Charleston",
-        "GRV": "Greenville",
-        "MYR": "Myrtle Beach"
-    },
-    "TN": {
-        "NAS": "Nashville"
-    },
-    "UT": {
-        "SLC": "Salt Lake City"
-    },
-    "VA": {
-        "NVA": "Northern Virginia",
-        "RIC": "Richmond",
-        "HAM": "Hampton Roads"
-    },
-    "WA": {
-        "SEA": "Seattle"
+def load_market_codes(csv_path: str = None) -> dict:
+    """
+    Load market codes from CSV file.
+
+    Args:
+        csv_path: Path to market_codes.csv (default: same directory as script)
+
+    Returns:
+        Dict of {state_abbr: {market_code: market_name}}
+    """
+    if csv_path is None:
+        # Look for CSV in same directory as script
+        script_dir = Path(__file__).parent
+        csv_path = script_dir / "market_codes.csv"
+
+    market_codes = {}
+
+    try:
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                state = row['state_abbr']
+                code = row['market_code']
+                region = row['city_region']
+
+                if state not in market_codes:
+                    market_codes[state] = {}
+                market_codes[state][code] = region
+
+        logger.info(f"Loaded {sum(len(m) for m in market_codes.values())} markets from {len(market_codes)} states")
+        return market_codes
+
+    except FileNotFoundError:
+        logger.warning(f"Market codes CSV not found at {csv_path}, using fallback")
+        return get_fallback_market_codes()
+
+
+def get_fallback_market_codes() -> dict:
+    """Fallback market codes if CSV is not found."""
+    return {
+        "FL": {
+            "TMP": "Tampa / Manatee",
+            "ORL": "Orlando",
+            "JAX": "Jacksonville / St. Augustine",
+            "MIA": "Miami",
+            "FTL": "Ft. Lauderdale"
+        },
+        "TX": {
+            "DFW": "Dallas / Ft. Worth",
+            "HOU": "Houston",
+            "AUS": "Austin / Central Texas",
+            "SAT": "San Antonio"
+        },
+        "AZ": {
+            "PHX": "Phoenix",
+            "TUC": "Tucson"
+        }
     }
-}
+
 
 # State name to abbreviation mapping
 STATE_ABBREV = {
-    "florida": "FL", "texas": "TX", "arizona": "AZ", "california": "CA",
-    "colorado": "CO", "georgia": "GA", "idaho": "ID", "indiana": "IN",
-    "maryland": "MD", "minnesota": "MN", "nevada": "NV", "new jersey": "NJ",
-    "new-jersey": "NJ", "north carolina": "NC", "north-carolina": "NC",
-    "oregon": "OR", "south carolina": "SC", "south-carolina": "SC",
-    "tennessee": "TN", "utah": "UT", "virginia": "VA", "washington": "WA"
+    "alabama": "AL", "arizona": "AZ", "arkansas": "AR", "california": "CA",
+    "colorado": "CO", "delaware": "DE", "florida": "FL", "georgia": "GA",
+    "idaho": "ID", "illinois": "IL", "indiana": "IN", "kansas": "KS",
+    "maryland": "MD", "minnesota": "MN", "missouri": "MO", "nevada": "NV",
+    "new jersey": "NJ", "new-jersey": "NJ", "new york": "NY", "new-york": "NY",
+    "north carolina": "NC", "north-carolina": "NC", "oklahoma": "OK",
+    "oregon": "OR", "pennsylvania": "PA", "south carolina": "SC",
+    "south-carolina": "SC", "tennessee": "TN", "texas": "TX", "utah": "UT",
+    "virginia": "VA", "washington": "WA", "west virginia": "WV",
+    "west-virginia": "WV", "wisconsin": "WI"
 }
 
 
 class LennarScraper:
-    """Improved Lennar scraper using search API with market codes."""
+    """Lennar scraper using search API with market codes."""
 
     BASE_URL = "https://www.lennar.com"
     SEARCH_URL = "https://www.lennar.com/find-a-home"
 
     def __init__(self, chrome_path: str = None, headless: bool = True,
-                 wait_timeout: int = 15, page_load_delay: float = 3.0):
+                 wait_timeout: int = 15, page_load_delay: float = 3.0,
+                 market_codes_csv: str = None):
         """
         Initialize the scraper.
 
@@ -178,6 +155,7 @@ class LennarScraper:
             headless: Run browser in headless mode
             wait_timeout: Selenium wait timeout in seconds
             page_load_delay: Delay after page load in seconds
+            market_codes_csv: Path to market codes CSV file
         """
         self.chrome_path = chrome_path
         self.headless = headless
@@ -185,6 +163,9 @@ class LennarScraper:
         self.page_load_delay = page_load_delay
         self.driver = None
         self.listings: list[LennarListing] = []
+
+        # Load market codes from CSV
+        self.market_codes = load_market_codes(market_codes_csv)
 
     def _setup_driver(self):
         """Initialize Selenium WebDriver."""
@@ -329,7 +310,7 @@ class LennarScraper:
         """
         listings = []
 
-        # Find all price blocks as entry points (your teammate's approach)
+        # Find all price blocks as entry points
         price_blocks = soup.find_all("div", string=lambda text: text and "$" in text)
         logger.debug(f"Found {len(price_blocks)} price blocks")
 
@@ -449,8 +430,8 @@ class LennarScraper:
 
         Args:
             state: State abbreviation (e.g., "FL")
-            market_code: Market code (e.g., "TAM")
-            market_name: Market name (e.g., "Tampa and Manatee")
+            market_code: Market code (e.g., "TMP")
+            market_name: Market name (e.g., "Tampa / Manatee")
 
         Returns:
             List of listings from this market
@@ -498,11 +479,11 @@ class LennarScraper:
         if len(state_upper) != 2:
             state_upper = STATE_ABBREV.get(state.lower(), state.upper()[:2])
 
-        if state_upper not in MARKET_CODES:
+        if state_upper not in self.market_codes:
             logger.warning(f"No market codes found for state: {state}")
             return []
 
-        markets = MARKET_CODES[state_upper]
+        markets = self.market_codes[state_upper]
         all_listings = []
 
         for code, name in tqdm(markets.items(), desc=f"Markets in {state_upper}"):
@@ -527,7 +508,7 @@ class LennarScraper:
         if states:
             states_to_scrape = states
         else:
-            states_to_scrape = list(MARKET_CODES.keys())
+            states_to_scrape = list(self.market_codes.keys())
 
         all_listings = []
 
@@ -540,6 +521,17 @@ class LennarScraper:
 
         self.listings = all_listings
         return all_listings
+
+    def get_available_states(self) -> list[str]:
+        """Return list of available state abbreviations."""
+        return sorted(self.market_codes.keys())
+
+    def get_markets_for_state(self, state: str) -> dict:
+        """Return market codes for a specific state."""
+        state_upper = state.upper()
+        if len(state_upper) != 2:
+            state_upper = STATE_ABBREV.get(state.lower(), state.upper()[:2])
+        return self.market_codes.get(state_upper, {})
 
     def export_to_csv(self, filepath: str = "lennar_listings.csv") -> str:
         """Export listings to CSV."""
@@ -617,20 +609,19 @@ Examples:
   python lennar_scraper.py --states FL TX AZ
 
   # Scrape specific market
-  python lennar_scraper.py --state FL --market TAM
+  python lennar_scraper.py --state FL --market TMP
 
   # Scrape all states
   python lennar_scraper.py --all
 
+  # List available states and markets
+  python lennar_scraper.py --list-states
+  python lennar_scraper.py --list-markets FL
+
   # Show browser window (not headless)
   python lennar_scraper.py --states FL --no-headless
 
-Available market codes:
-  FL: TAM, TRE, ORL, OCA, JAX, PEN, SPA, SAR, FTM, PLM, FTL, MIA
-  TX: DAL, HOU, AUS, SAN
-  AZ: PHO, TUC
-  CA: BAY, SAC, LAX, SBD, SDG, ORA
-  (and more - see MARKET_CODES in source)
+Market codes are loaded from market_codes.csv in the same directory.
         """
     )
 
@@ -638,6 +629,9 @@ Available market codes:
     parser.add_argument('--state', help='Single state for market-specific scraping')
     parser.add_argument('--market', help='Specific market code to scrape')
     parser.add_argument('--all', action='store_true', help='Scrape all states')
+    parser.add_argument('--list-states', action='store_true', help='List available states')
+    parser.add_argument('--list-markets', metavar='STATE', help='List markets for a state')
+    parser.add_argument('--market-codes-csv', help='Path to market codes CSV file')
     parser.add_argument('--chrome-path', help='Path to chromedriver executable')
     parser.add_argument('--no-headless', action='store_true', help='Show browser window')
     parser.add_argument('--output-csv', default='lennar_listings.csv', help='Output CSV file')
@@ -656,15 +650,36 @@ Available market codes:
         chrome_path=args.chrome_path,
         headless=not args.no_headless,
         wait_timeout=args.timeout,
-        page_load_delay=args.delay
+        page_load_delay=args.delay,
+        market_codes_csv=args.market_codes_csv
     )
 
     try:
+        # Handle info commands
+        if args.list_states:
+            print("Available states:")
+            for state in scraper.get_available_states():
+                markets = scraper.get_markets_for_state(state)
+                print(f"  {state}: {len(markets)} markets")
+            return
+
+        if args.list_markets:
+            state = args.list_markets.upper()
+            markets = scraper.get_markets_for_state(state)
+            if markets:
+                print(f"Markets in {state}:")
+                for code, name in sorted(markets.items()):
+                    print(f"  {code}: {name}")
+            else:
+                print(f"No markets found for state: {state}")
+            return
+
+        # Handle scraping commands
         if args.state and args.market:
             # Scrape specific market
             state = args.state.upper()
             market = args.market.upper()
-            market_name = MARKET_CODES.get(state, {}).get(market, market)
+            market_name = scraper.market_codes.get(state, {}).get(market, market)
             listings = scraper.scrape_market(state, market, market_name)
             scraper.listings = listings
 
@@ -677,8 +692,8 @@ Available market codes:
             scraper.scrape_all()
 
         else:
-            # Default: scrape Florida as example
             print("No states specified. Use --states, --all, or --state with --market")
+            print("Use --list-states to see available states")
             print("Example: python lennar_scraper.py --states FL TX")
             return
 
