@@ -1,21 +1,21 @@
 # Lennar Homebuilders Listings Scraper
 
-A Python-based web scraper for collecting Lennar Homebuilders listings from multiple sources (Lennar.com and Zillow).
+A Python-based web scraper for collecting Lennar Homebuilders listings from lennar.com using their search API with market codes.
 
 ## Features
 
-- **Multi-source scraping**: Scrape from Lennar.com directly or Zillow's builder profiles
-- **Comprehensive data extraction**:
-  - Location (address, city, state, zip code)
-  - House type (single family, townhome, condo)
+- **Market-based scraping**: Uses Lennar's internal search API with market codes for comprehensive coverage
+- **Full pagination handling**: Automatically clicks "Load more homes" to get all listings
+- **Status extraction**: Captures home status (Move-In Ready, Under Construction, Coming Soon)
+- **Comprehensive data**:
+  - Address and city
   - Price (formatted and numeric)
+  - Beds, baths, square footage
   - Community name
-  - Bedrooms, bathrooms, square footage
-  - Listing status and URLs
-- **Flexible filtering**: Filter by state, location, price range
-- **Multiple export formats**: CSV and JSON output
-- **Selenium support**: Handle JavaScript-rendered content
-- **Rate limiting**: Configurable delays to avoid blocking
+  - Status
+  - Market/Region info
+- **Multiple export formats**: CSV, JSON, and Excel
+- **All US markets supported**: FL, TX, AZ, CA, CO, GA, ID, IN, MD, MN, NV, NJ, NC, OR, SC, TN, UT, VA, WA
 
 ## Installation
 
@@ -31,109 +31,135 @@ pip install -r requirements.txt
 ### Requirements
 
 - Python 3.9+
-- Chrome/Chromium browser (for Selenium mode)
+- Chrome/Chromium browser
+- ChromeDriver (auto-downloaded via webdriver-manager, or provide path manually)
 
 ## Usage
 
-### Quick Start
+### Scrape All Florida Markets
 
 ```bash
-# Scrape from both sources (default)
-python scrape.py --states texas florida
-
-# Quick test with limited communities
-python scrape.py --states california --max-communities 3
+python lennar_scraper.py --states FL
 ```
 
-### Unified Scraper (Recommended)
-
-The `scrape.py` script provides a unified interface:
+### Scrape Multiple States
 
 ```bash
-# Scrape from both Lennar.com and Zillow
-python scrape.py --both --states texas arizona
-
-# Scrape only from Lennar.com
-python scrape.py --source lennar --states florida
-
-# Scrape only from Zillow with specific cities
-python scrape.py --source zillow --locations "Dallas, TX" "Houston, TX"
-
-# Use Selenium for JavaScript-heavy pages
-python scrape.py --both --selenium --states california
-
-# Custom output files
-python scrape.py --states texas --output-csv my_listings.csv --output-json my_listings.json
+python lennar_scraper.py --states FL TX AZ CA
 ```
 
-### Lennar.com Direct Scraper
+### Scrape a Specific Market
 
 ```bash
-# Scrape specific states
-python lennar_scraper.py --states texas florida california
-
-# Limit communities per state
-python lennar_scraper.py --states texas --max-communities 5
-
-# Use Selenium for better JavaScript support
-python lennar_scraper.py --selenium --states arizona
-
-# Search mode with filters
-python lennar_scraper.py --search --location "Dallas, TX" --min-price 300000 --max-price 500000
+python lennar_scraper.py --state FL --market TAM
 ```
 
-### Zillow Scraper
+### Scrape All States
 
 ```bash
-# Search specific locations
-python zillow_lennar_scraper.py --locations "Phoenix, AZ" "Las Vegas, NV"
+python lennar_scraper.py --all
+```
 
-# Scrape Lennar's builder profile page
-python zillow_lennar_scraper.py --profile
+### Show Browser Window (Debug Mode)
 
-# Use Selenium for better results
-python zillow_lennar_scraper.py --selenium --locations "Miami, FL"
+```bash
+python lennar_scraper.py --states FL --no-headless
+```
+
+### Export to Excel
+
+```bash
+python lennar_scraper.py --states FL --output-excel lennar_fl.xlsx
+```
+
+### Use Custom ChromeDriver Path
+
+```bash
+python lennar_scraper.py --states FL --chrome-path "C:\path\to\chromedriver.exe"
 ```
 
 ## Command Line Options
 
-### scrape.py (Unified)
-
 | Option | Description |
 |--------|-------------|
-| `--source {lennar,zillow}` | Use single data source |
-| `--both` | Use both sources (default) |
-| `--states STATE [STATE ...]` | State slugs to scrape (e.g., texas florida) |
-| `--locations LOC [LOC ...]` | Specific locations for Zillow |
-| `--max-communities N` | Max communities per state |
-| `--selenium` | Use Selenium for JS rendering |
+| `--states STATE [STATE ...]` | States to scrape (abbreviations: FL, TX, etc.) |
+| `--state STATE` | Single state (use with --market) |
+| `--market CODE` | Specific market code (use with --state) |
+| `--all` | Scrape all states |
+| `--chrome-path PATH` | Path to chromedriver executable |
 | `--no-headless` | Show browser window |
-| `--delay SECONDS` | Delay between requests (default: 1.5) |
-| `--output-csv FILE` | Output CSV file path |
-| `--output-json FILE` | Output JSON file path |
-| `-v, --verbose` | Enable verbose logging |
+| `--output-csv FILE` | Output CSV file (default: lennar_listings.csv) |
+| `--output-json FILE` | Output JSON file (default: lennar_listings.json) |
+| `--output-excel FILE` | Output Excel file (optional) |
+| `--timeout SECONDS` | Selenium wait timeout (default: 15) |
+| `--delay SECONDS` | Page load delay (default: 3.0) |
+| `-v, --verbose` | Enable verbose/debug logging |
 
-### lennar_scraper.py
+## Market Codes
 
-| Option | Description |
-|--------|-------------|
-| `--states STATE [STATE ...]` | States to scrape |
-| `--max-communities N` | Limit communities per state |
-| `--search` | Enable search mode |
-| `--location LOCATION` | Location for search |
-| `--min-price PRICE` | Minimum price filter |
-| `--max-price PRICE` | Maximum price filter |
-| `--bedrooms N` | Minimum bedrooms |
-| `--house-type TYPE` | House type filter |
+### Florida (FL)
+| Code | Market |
+|------|--------|
+| TAM | Tampa and Manatee |
+| TRE | Treasure Coast |
+| ORL | Orlando |
+| OCA | Ocala |
+| JAX | Jacksonville |
+| PEN | Gulf Coast |
+| SPA | Space Coast |
+| SAR | Sarasota |
+| FTM | Fort Myers |
+| PLM | Palm Beach |
+| FTL | Fort Lauderdale |
+| MIA | Miami |
+
+### Texas (TX)
+| Code | Market |
+|------|--------|
+| DAL | Dallas/Fort Worth |
+| HOU | Houston |
+| AUS | Austin |
+| SAN | San Antonio |
+
+### Arizona (AZ)
+| Code | Market |
+|------|--------|
+| PHO | Phoenix |
+| TUC | Tucson |
+
+### California (CA)
+| Code | Market |
+|------|--------|
+| BAY | Bay Area |
+| SAC | Sacramento |
+| LAX | Los Angeles |
+| SBD | Inland Empire |
+| SDG | San Diego |
+| ORA | Orange County |
+
+### Other States
+See `MARKET_CODES` dictionary in `lennar_scraper.py` for complete list.
 
 ## Output Format
 
-### CSV Output
+### CSV/Excel Columns
 
-```csv
-community_name,location,city,state,zip_code,price,price_numeric,house_type,bedrooms,bathrooms,sqft,status,plan_name,url,scraped_at
-"Sunset Valley","123 Main St","Austin","TX","78701","$450,000",450000,"Single Family","4","3","2500","Move-In Ready","The Hampton","https://...","2024-01-15T10:30:00"
-```
+| Column | Description |
+|--------|-------------|
+| address | Full street address |
+| city | City name |
+| state | State abbreviation |
+| price | Formatted price (e.g., "$450,000") |
+| price_numeric | Numeric price for sorting/filtering |
+| bedrooms | Number of bedrooms |
+| bathrooms | Number of bathrooms |
+| sqft | Square footage |
+| community | Community/subdivision name |
+| status | Move-In Ready, Under Construction, etc. |
+| market | Market name |
+| market_code | Market code (TAM, ORL, etc.) |
+| url | Link to listing page |
+| scraped_at | Timestamp of scrape |
 
 ### JSON Output
 
@@ -143,63 +169,51 @@ community_name,location,city,state,zip_code,price,price_numeric,house_type,bedro
   "total_listings": 150,
   "listings": [
     {
-      "community_name": "Sunset Valley",
-      "location": "123 Main St",
-      "city": "Austin",
-      "state": "TX",
-      "zip_code": "78701",
+      "address": "123 Palm Dr",
+      "city": "Tampa",
+      "state": "FL",
       "price": "$450,000",
       "price_numeric": 450000,
-      "house_type": "Single Family",
-      "bedrooms": "4",
-      "bathrooms": "3",
-      "sqft": "2500",
+      "bedrooms": 4,
+      "bathrooms": 3.0,
+      "sqft": 2500,
+      "community": "Sunset Valley",
       "status": "Move-In Ready",
-      "plan_name": "The Hampton",
-      "url": "https://...",
+      "market": "Tampa and Manatee",
+      "market_code": "TAM",
+      "url": "https://www.lennar.com/...",
       "scraped_at": "2024-01-15T10:30:00"
     }
   ]
 }
 ```
 
-## Supported States
-
-The scraper covers all states where Lennar operates:
-
-- Arizona, California, Colorado, Florida, Georgia
-- Idaho, Indiana, Maryland, Minnesota, Nevada
-- New Jersey, North Carolina, Oregon, South Carolina
-- Tennessee, Texas, Utah, Virginia, Washington
-
 ## Troubleshooting
 
-### No listings found
+### Missing Homes in Some Markets
 
-1. **Enable Selenium mode**: Use `--selenium` flag for JavaScript-heavy pages
-2. **Check rate limiting**: Increase delay with `--delay 3.0`
-3. **Try Zillow source**: Use `--source zillow` as an alternative
+The scraper includes improvements over basic approaches:
+- Extended wait times for AJAX content
+- Multiple attempts for "Load more" button
+- Additional scrolling to trigger lazy loading
+- JavaScript click fallback when normal click fails
 
-### Selenium not working
+If you're still missing homes, try:
+```bash
+python lennar_scraper.py --states FL --delay 5.0 --timeout 20 --no-headless
+```
 
-1. Ensure Chrome/Chromium is installed
-2. The webdriver-manager package auto-downloads the correct ChromeDriver
-3. For headless issues, try `--no-headless` to see the browser
+### ChromeDriver Issues
 
-### Getting blocked
+If ChromeDriver auto-download fails:
+1. Download ChromeDriver manually from https://chromedriver.chromium.org/
+2. Use `--chrome-path` to specify the location
 
-1. Increase delay between requests: `--delay 5.0`
-2. The scraper automatically rotates User-Agent headers
-3. Consider using a proxy (not included by default)
+### Blocked/Timeout Errors
 
-## Legal Considerations
-
-This scraper is intended for personal use and research purposes. Please:
-
-- Respect the websites' Terms of Service
-- Use reasonable request rates to avoid overloading servers
-- Don't use scraped data for commercial purposes without permission
-- Be aware that web scraping may be subject to legal restrictions in your jurisdiction
+- Increase delays: `--delay 5.0`
+- Run in non-headless mode to debug: `--no-headless`
+- Check your internet connection
 
 ## Project Structure
 
@@ -207,11 +221,25 @@ This scraper is intended for personal use and research purposes. Please:
 LEN_scraper/
 ├── README.md              # This file
 ├── requirements.txt       # Python dependencies
-├── scrape.py             # Unified scraper CLI
-├── lennar_scraper.py     # Lennar.com direct scraper
-└── zillow_lennar_scraper.py  # Zillow-based scraper
+├── lennar_scraper.py     # Main scraper
+└── .gitignore            # Git ignore file
 ```
+
+## How It Works
+
+1. **URL Construction**: Uses `https://www.lennar.com/find-a-home?state=XX&market=YYY`
+2. **Cookie Handling**: Automatically accepts cookie consent popup
+3. **Pagination**: Clicks "Load more homes" button repeatedly until all homes are loaded
+4. **Parsing**: Finds price blocks and navigates to parent cards to extract all data
+5. **Status Detection**: Looks for status/pill elements or keywords in card text
+
+## Legal Considerations
+
+This scraper is intended for personal use and research purposes. Please:
+- Respect Lennar's Terms of Service
+- Use reasonable request rates
+- Don't use scraped data for commercial purposes without permission
 
 ## License
 
-MIT License - See LICENSE file for details.
+MIT License
